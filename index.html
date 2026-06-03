@@ -1,21 +1,986 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Index of Terminal-Commands</title>
-  <style>
-    body{font-family:system-ui,Segoe UI,Helvetica,Arial,sans-serif;margin:2rem}
-    ul{padding:0;list-style:none}
-    li{margin:.5rem 0}
-    a{color:#0366d6;text-decoration:none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal & Git Commands — Field Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border2: #d0cec4;
+    --text: #1a1916;
+    --muted: #7a7870;
+    --dim: #b0aea6;
+
+    --nav: #f5a623;
+    --files: #4a9eff;
+    --git-init: #7c6df0;
+    --git-branch: #e85d75;
+    --git-stage: #2bb89a;
+    --git-push: #f5a623;
+    --git-pull: #e06c35;
+    --git-history: #6b8cce;
+    --git-undo: #d4555a;
+    --git-auth: #5a9e6f;
+    --process: #9b6dc0;
+    --search: #3aa8a8;
+    --env: #c4813a;
+    --claude: #e85d75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    background: var(--text);
+    color: var(--bg);
+    padding: 48px 56px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-header::after {
+    content: '$_';
+    position: absolute;
+    right: 48px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 96px;
+    color: rgba(255,255,255,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .header-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 14px;
+  }
+
+  .page-header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    margin-bottom: 16px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    max-width: 560px;
+    font-style: italic;
+  }
+
+  /* ── FLOW BAR ── */
+  .flow-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 56px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .flow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-right: 4px;
+  }
+
+  .flow-step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  .flow-arrow { color: var(--dim); font-size: 12px; }
+
+  /* ── NAV TABS ── */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 56px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 20px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+    cursor: pointer;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+
+  /* ── CONTENT ── */
+  .content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 56px 80px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 40px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .section-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .section-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── COMMAND TABLE ── */
+  .cmd-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .cmd-table tr:not(:last-child) td {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cmd-table tr:hover td {
+    background: var(--surface2);
+  }
+
+  .cmd-table td {
+    padding: 11px 16px;
+    vertical-align: top;
+  }
+
+  .cmd-table td:first-child {
+    width: 300px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+  }
+
+  .cmd-table td:last-child {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+    margin-left: 8px;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+
+  .b-warn { background: #fff3cd; color: #7a5500; }
+  .b-tip  { background: #d4edda; color: #1a6630; }
+  .b-info { background: #d1ecf1; color: #0c5460; }
+
+  em { font-style: italic; color: var(--dim); }
+
+  /* ── EXAMPLE BLOCK ── */
+  .example-block {
+    margin-top: 32px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .example-header {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .example-body {
+    padding: 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .example-scenario {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .ex-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    padding-top: 2px;
+  }
+
+  .ex-code {
+    background: #1a1916;
+    color: #e8e6e0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+  }
+
+  .ex-code .c { color: #6a6866; }
+  .ex-code .k { color: var(--nav); }
+  .ex-code .s { color: #a3be8c; }
+
+  /* ── CHEATSHEET GRID ── */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .cheat-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .cheat-card-header {
+    padding: 10px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cheat-card-body { padding: 8px 0; }
+
+  .cheat-row {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 8px;
+    padding: 6px 14px;
+    align-items: baseline;
+  }
+
+  .cheat-row:hover { background: var(--surface2); }
+
+  .cheat-cmd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .cheat-note {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── FLOW SECTION (git flow) ── */
+  .flow-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .flow-row {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    background: var(--surface);
+  }
+
+  .flow-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .flow-row:hover { background: var(--surface2); }
+
+  .flow-cell {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .flow-cell:not(:last-child) { border-right: 1px solid var(--border); }
+
+  .flow-step-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+  }
+
+  .flow-cmd { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text); }
+  .flow-why { font-size: 12px; color: var(--muted); }
+
+  .flow-row-header .flow-cell {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: var(--surface2);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 56px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>
 </head>
 <body>
-  <h1>Index</h1>
-  <p>Files in this folder:</p>
-  <ul>
-    <li><a href="terminal-commands.html">terminal-commands.html</a></li>
-  </ul>
+
+<div class="page-header">
+  <div class="header-eyebrow">Field Reference · Build AI Product Sense</div>
+  <h1>Terminal &amp; Git</h1>
+  <p>Every command you actually need — from navigating a folder to pushing a branch. No filler.</p>
+</div>
+
+<div class="flow-bar">
+  <span class="flow-label">Git flow →</span>
+  <span class="flow-step" style="background:#f0efe9;color:#7c6df0;">init / clone</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#e85d75;">branch</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#2bb89a;">stage</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#1a1916;">commit</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#f5a623;">push</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#e06c35;">pull / sync</span>
+  <span class="flow-arrow">→</span>
+  <span class="flow-step" style="background:#f0efe9;color:#d4555a;">undo</span>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('git')">Git</button>
+  <button class="tab-btn" onclick="switchTab('terminal')">Terminal</button>
+  <button class="tab-btn" onclick="switchTab('claude')">Claude Code</button>
+  <button class="tab-btn" onclick="switchTab('examples')">Real Examples</button>
+  <button class="tab-btn" onclick="switchTab('cheatsheet')">Quick Ref</button>
+</nav>
+
+<div class="content">
+
+  <!-- ── GIT TAB ── -->
+  <div class="tab-panel active" id="tab-git">
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#7c6df0;"></div>
+        <span class="section-title">Starting a repo</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git init</td><td>Turn any folder into a git repo. Run once at project root.</td></tr>
+        <tr><td>git clone &lt;url&gt;</td><td>Copy a remote repo locally. Creates a new folder with everything inside.</td></tr>
+        <tr><td>git clone &lt;url&gt; .</td><td>Clone into current directory instead of a subfolder. Note the dot.</td></tr>
+        <tr><td>git remote add origin &lt;url&gt;</td><td>After <code>git init</code>, link your local repo to a GitHub remote. Do this once.</td></tr>
+        <tr><td>git remote -v</td><td>Confirm which remote URL your repo points to. First thing to check when push fails.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#e85d75;"></div>
+        <span class="section-title">Branching</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git branch</td><td>List all local branches. Star = current branch.</td></tr>
+        <tr><td>git branch -a</td><td>List local and remote branches.</td></tr>
+        <tr><td>git checkout -b &lt;name&gt;</td><td>Create and switch to a new branch in one move. <em>Always branch before changing anything.</em><span class="badge b-tip">habit</span></td></tr>
+        <tr><td>git checkout &lt;name&gt;</td><td>Switch to an existing branch.</td></tr>
+        <tr><td>git branch -d &lt;name&gt;</td><td>Delete a merged branch locally. Use <code>-D</code> to force-delete unmerged.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#2bb89a;"></div>
+        <span class="section-title">Staging &amp; committing</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git status</td><td>See what's changed, staged, or untracked. Run this constantly.</td></tr>
+        <tr><td>git diff</td><td>See exact line-level changes before staging. Use <code>git diff --staged</code> after adding.</td></tr>
+        <tr><td>git add -p</td><td>Stage changes hunk by hunk interactively. Never blindly add everything.<span class="badge b-tip">best practice</span></td></tr>
+        <tr><td>git add &lt;file&gt;</td><td>Stage one specific file.</td></tr>
+        <tr><td>git add .</td><td>Stage everything. Fast but sloppy — use only when you're certain.<span class="badge b-warn">careful</span></td></tr>
+        <tr><td>git commit -m "&lt;message&gt;"</td><td>Commit staged changes. Be specific: what + why, not "update."</td></tr>
+        <tr><td>git commit --amend</td><td>Edit the last commit message or add forgotten files. Before pushing only.<span class="badge b-warn">pre-push only</span></td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#f5a623;"></div>
+        <span class="section-title">Pushing to GitHub</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git push origin &lt;branch&gt;</td><td>Push your branch to GitHub. Required on first push of any new branch.</td></tr>
+        <tr><td>git push -u origin &lt;branch&gt;</td><td>Push and set upstream tracking in one shot. Future pushes just need <code>git push</code>.<span class="badge b-tip">use this</span></td></tr>
+        <tr><td>git push</td><td>Push current branch once tracking is set (after the <code>-u</code> push above).</td></tr>
+        <tr><td>git push --force-with-lease</td><td>Safer force push — only overwrites if no one else pushed since you pulled.<span class="badge b-warn">use carefully</span></td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#e06c35;"></div>
+        <span class="section-title">Pulling &amp; syncing</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git pull</td><td>Fetch + merge latest from remote. Run before starting any new work.</td></tr>
+        <tr><td>git pull --rebase</td><td>Fetch + rebase instead of merge. Cleaner history, fewer merge commits.<span class="badge b-tip">cleaner</span></td></tr>
+        <tr><td>git fetch</td><td>Download remote changes without merging. Safe way to see what's out there.</td></tr>
+        <tr><td>git merge &lt;branch&gt;</td><td>Merge a branch into your current one. Usually done via PR on GitHub instead.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#6b8cce;"></div>
+        <span class="section-title">Inspecting history</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git log --oneline</td><td>Clean one-line commit history. Add <code>-10</code> to limit to last 10.</td></tr>
+        <tr><td>git log --oneline --graph</td><td>Shows branch and merge structure visually in the terminal.</td></tr>
+        <tr><td>git show &lt;commit-hash&gt;</td><td>See exactly what a specific commit changed.</td></tr>
+        <tr><td>git diff HEAD~1</td><td>Compare working tree against the previous commit, not just uncommitted changes.</td></tr>
+        <tr><td>git tag v1.0</td><td>Mark a release point. Useful for tagging validated builds in a regulated workflow.</td></tr>
+        <tr><td>git blame &lt;file&gt;</td><td>See who last changed each line of a file. Useful for hunting a bug.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#d4555a;"></div>
+        <span class="section-title">Undoing things</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git restore &lt;file&gt;</td><td>Discard unstaged changes to a file. Permanent — reverts to last commit state.</td></tr>
+        <tr><td>git restore --staged &lt;file&gt;</td><td>Unstage a file without losing the changes.</td></tr>
+        <tr><td>git stash</td><td>Shelve all uncommitted changes temporarily. Cleans working directory without losing work.</td></tr>
+        <tr><td>git stash pop</td><td>Bring stashed changes back.</td></tr>
+        <tr><td>git stash list</td><td>See all your stashes. You will forget what's stashed — check here.</td></tr>
+        <tr><td>git revert &lt;commit-hash&gt;</td><td>Create a new commit that undoes a previous one. History stays intact.<span class="badge b-tip">safe undo</span></td></tr>
+        <tr><td>git reset --soft HEAD~1</td><td>Undo last commit but keep changes staged. Safe.</td></tr>
+        <tr><td>git reset --hard HEAD~1</td><td>Wipe last commit and all changes. No recovery — except reflog.<span class="badge b-warn">destructive</span></td></tr>
+        <tr><td>git reflog</td><td>The safety net. Shows every HEAD move — recover commits even after a hard reset.<span class="badge b-tip">lifesaver</span></td></tr>
+        <tr><td>git cherry-pick &lt;commit-hash&gt;</td><td>Pull one specific commit onto your current branch without merging the whole thing.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#5a9e6f;"></div>
+        <span class="section-title">GitHub auth &amp; config</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>git config --global user.name "name"</td><td>Set your identity once. Shows on every commit.</td></tr>
+        <tr><td>git config --global user.email "email"</td><td>Must match your GitHub account email.</td></tr>
+        <tr><td>git config --list</td><td>See all current git config values. Debug auth issues here first.</td></tr>
+        <tr><td>gh auth login</td><td>GitHub CLI — authenticate with PAT or browser. Easiest auth method.<span class="badge b-info">gh cli</span></td></tr>
+        <tr><td>gh repo create</td><td>Create a new GitHub repo from the terminal without touching the browser.<span class="badge b-info">gh cli</span></td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#d4555a;"></div>
+        <span class="section-title">Safety &amp; setup</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>.gitignore</td><td>A file (not a command). Lists what git should never track — <code>.env</code>, secrets, PAT tokens, PHI samples, build junk. In a regulated context this is your first line of defense against committing credentials.<span class="badge b-warn">critical</span></td></tr>
+        <tr><td>git rm --cached &lt;file&gt;</td><td>Stop tracking a file you committed by accident, without deleting it locally. Then add it to .gitignore.</td></tr>
+        <tr><td>git config --global alias.co checkout</td><td>Make your own shortcuts. After this, <code>git co</code> works like <code>git checkout</code>.</td></tr>
+        <tr><td>git tag --list</td><td>List all tags in the repo.</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── TERMINAL TAB ── -->
+  <div class="tab-panel" id="tab-terminal">
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#4a9eff;"></div>
+        <span class="section-title">Navigation &amp; files</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>pwd</td><td>Print working directory — where am I right now.</td></tr>
+        <tr><td>ls -la</td><td>List all files including hidden ones (like .env). Shows permissions and sizes.</td></tr>
+        <tr><td>cd &lt;path&gt;</td><td>Change directory. <code>cd ..</code> goes up one level. <code>cd -</code> goes back to last directory.</td></tr>
+        <tr><td>mkdir -p &lt;path&gt;</td><td>Create a directory (and any missing parent directories). The <code>-p</code> prevents errors if it exists.</td></tr>
+        <tr><td>cp -r &lt;src&gt; &lt;dest&gt;</td><td>Copy a file or folder recursively.</td></tr>
+        <tr><td>mv &lt;src&gt; &lt;dest&gt;</td><td>Move or rename a file or folder.</td></tr>
+        <tr><td>rm -rf &lt;path&gt;</td><td>Delete a file or folder recursively and forcibly. No recycle bin — permanent.<span class="badge b-warn">destructive</span></td></tr>
+        <tr><td>cat &lt;file&gt;</td><td>Print a file's contents to the terminal.</td></tr>
+        <tr><td>head -n 20 &lt;file&gt;</td><td>Show first 20 lines of a file.</td></tr>
+        <tr><td>tail -f &lt;file&gt;</td><td>Stream a file live as it grows. Essential for watching logs.<span class="badge b-tip">use this</span></td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#9b6dc0;"></div>
+        <span class="section-title">Process &amp; system</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>ps aux | grep &lt;name&gt;</td><td>Find a running process by name.</td></tr>
+        <tr><td>kill -9 &lt;pid&gt;</td><td>Force-kill a process by its ID. Get the PID from <code>ps aux</code> or <code>lsof</code>.</td></tr>
+        <tr><td>lsof -i :3000</td><td>Find what process is squatting on port 3000 (or any port). Replace with your port.<span class="badge b-tip">use this</span></td></tr>
+        <tr><td>ctrl+c</td><td>Interrupt (stop) a running process.</td></tr>
+        <tr><td>ctrl+z</td><td>Suspend a running process. Resume with <code>fg</code>.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#3aa8a8;"></div>
+        <span class="section-title">Search &amp; piping</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>grep -r "text" .</td><td>Search for text across all files recursively from current directory.</td></tr>
+        <tr><td>grep -r "text" . --include="*.py"</td><td>Narrow grep to a specific file type.</td></tr>
+        <tr><td>cat &lt;file&gt; | grep "error"</td><td>Pipe file output into grep to filter. Chain with <code>| tail -20</code> to limit results.</td></tr>
+        <tr><td>| wc -l</td><td>Count lines from piped output. Append to any command. e.g. <code>grep -r "TODO" . | wc -l</code></td></tr>
+        <tr><td>find . -name "*.json"</td><td>Find all files matching a pattern recursively.</td></tr>
+        <tr><td>diff &lt;file1&gt; &lt;file2&gt;</td><td>Compare two files line by line, outside of git.</td></tr>
+        <tr><td>du -sh &lt;dir&gt;</td><td>How big is this folder. The <code>-sh</code> gives a single human-readable total.</td></tr>
+        <tr><td>df -h</td><td>Disk space remaining across mounted drives, human-readable.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#5a9e6f;"></div>
+        <span class="section-title">Shell shortcuts</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>ctrl+r</td><td>Reverse-search your command history interactively. Start typing, it finds the match. Huge time saver.<span class="badge b-tip">use this</span></td></tr>
+        <tr><td>!!</td><td>Rerun the last command. Pairs perfectly with <code>sudo !!</code> when you forgot sudo.</td></tr>
+        <tr><td>history | grep &lt;term&gt;</td><td>Search everything you've ever typed for a command you can't remember.</td></tr>
+        <tr><td>chmod +x &lt;file&gt;</td><td>Make a script executable. You'll hit this every time you write a shell script.</td></tr>
+        <tr><td>watch &lt;command&gt;</td><td>Rerun a command every 2 seconds and watch the output change live.</td></tr>
+        <tr><td>&lt;cmd&gt; | xargs &lt;cmd2&gt;</td><td>Feed the output of one command as arguments to another.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#c4813a;"></div>
+        <span class="section-title">Environment &amp; packages</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>echo $PATH</td><td>See your current executable search path. Where the shell looks for commands.</td></tr>
+        <tr><td>export VAR=value</td><td>Set an environment variable for the current session.</td></tr>
+        <tr><td>which python</td><td>Confirm which python (or node, pip, etc.) the shell is actually using. Check this when package installs seem to disappear.</td></tr>
+        <tr><td>pip install &lt;pkg&gt; --break-system-packages</td><td>Install Python packages without virtualenv conflicts. Always include this flag.</td></tr>
+        <tr><td>pip list | grep &lt;name&gt;</td><td>Confirm a package actually installed.</td></tr>
+        <tr><td>npm install</td><td>Install all dependencies from <code>package.json</code>.</td></tr>
+        <tr><td>npm run dev</td><td>Start development server (or whatever script is defined in package.json).</td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── CLAUDE CODE TAB ── -->
+  <div class="tab-panel" id="tab-claude">
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#e85d75;"></div>
+        <span class="section-title">Claude Code CLI</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>claude</td><td>Start an interactive Claude Code session in the current directory. Context is set by your project files.</td></tr>
+        <tr><td>claude -p "&lt;prompt&gt;"</td><td>One-shot prompt — runs and exits without an interactive session. Good for scripted tasks.<span class="badge b-tip">non-interactive</span></td></tr>
+        <tr><td>claude --resume</td><td>Pick up the last session where you left off.</td></tr>
+        <tr><td>claude --model &lt;model&gt;</td><td>Specify which model to use for the session.</td></tr>
+        <tr><td>/help</td><td>In-session command. Lists available slash commands.</td></tr>
+        <tr><td>/clear</td><td>Clear conversation history without ending the session.</td></tr>
+        <tr><td>/compact</td><td>Summarize and compress context when the window gets long.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#7c6df0;"></div>
+        <span class="section-title">Setup &amp; config</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>npm install -g @anthropic-ai/claude-code</td><td>Install Claude Code globally. Requires Node.js.</td></tr>
+        <tr><td>which claude</td><td>Confirm the binary is installed and on your PATH.</td></tr>
+        <tr><td>cat AGENTS.md</td><td>Read the project-level agent instructions. This is how you configure sub-agent behavior and skill routing.</td></tr>
+        <tr><td>cat CLAUDE.md</td><td>Project-specific Claude instructions. Equivalent to a persistent system prompt for the repo.</td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div class="section-dot" style="background:#2bb89a;"></div>
+        <span class="section-title">Useful patterns</span>
+        <div class="section-rule"></div>
+      </div>
+      <table class="cmd-table">
+        <tr><td>claude -p "summarize all TODOs in this repo"</td><td>One-shot repo scan. No back and forth.</td></tr>
+        <tr><td>claude -p "read /docs/rubric.md and flag logic gaps"</td><td>Point Claude at a specific file with a specific task.</td></tr>
+        <tr><td>claude -p "write tests for scoring.py"</td><td>Generate tests for a file. Review before running.</td></tr>
+        <tr><td>claude --resume &amp;&amp; git add -p</td><td>Resume a session then manually review and stage what Claude changed.<span class="badge b-tip">best practice</span></td></tr>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── EXAMPLES TAB ── -->
+  <div class="tab-panel" id="tab-examples">
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 1 — Start a new project and push to GitHub</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Create repo locally</div>
+          <div class="ex-code"><span class="c"># Create folder and init</span>
+mkdir signal-detection &amp;&amp; cd signal-detection
+git init
+<span class="c"># Create GitHub repo via CLI (no browser)</span>
+gh repo create signal-detection --private --source=. --remote=origin</div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">First commit and push</div>
+          <div class="ex-code">git checkout -b <span class="s">main</span>
+git add -p              <span class="c"># review every change before staging</span>
+git commit -m <span class="s">"initial: add fraud signal pipeline scaffold"</span>
+git push -u origin main  <span class="c"># sets tracking — future pushes just need git push</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 2 — Feature branch workflow</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Branch, build, push</div>
+          <div class="ex-code">git pull                  <span class="c"># sync before touching anything</span>
+git checkout -b <span class="s">feature/cpu-anomaly-signal</span>
+<span class="c"># ... make changes ...</span>
+git status
+git diff
+git add -p
+git commit -m <span class="s">"add cpu anomaly z-score signal to fraud pipeline"</span>
+git push -u origin feature/cpu-anomaly-signal</div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">After PR merged, clean up</div>
+          <div class="ex-code">git checkout main
+git pull
+git branch -d feature/cpu-anomaly-signal  <span class="c"># delete local branch</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 3 — Something broke, find the error</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Watch logs live</div>
+          <div class="ex-code">tail -f app.log
+<span class="c"># or stream and filter at the same time:</span>
+tail -f app.log | grep <span class="s">"ERROR"</span></div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">Hunt down the source</div>
+          <div class="ex-code">grep -r <span class="s">"KeyError"</span> . --include=<span class="s">"*.py"</span>  <span class="c"># which file throws it</span>
+lsof -i :8080                            <span class="c"># port squatting on dev server</span>
+kill -9 &lt;pid&gt;                            <span class="c"># evict it</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 4 — Claude Code session on a project</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Start and do work</div>
+          <div class="ex-code">cd ~/projects/patient-orchestrator
+claude
+<span class="c"># inside session:</span>
+<span class="c"># "read the scoring rubric in /docs and flag logic gaps"</span>
+<span class="c"># "write tests for risk_scoring.py"</span></div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">Review and commit Claude's changes</div>
+          <div class="ex-code">git diff                  <span class="c"># see what Claude changed</span>
+git add -p                <span class="c"># stage only what looks right</span>
+git commit -m <span class="s">"refactor: tighten refill risk scoring thresholds"</span>
+git push</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 5 — Undo something</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Oops, wrong commit (not pushed)</div>
+          <div class="ex-code">git log --oneline -5      <span class="c"># find the bad commit hash</span>
+git reset --soft HEAD~1   <span class="c"># undo commit, keep changes staged</span>
+<span class="c"># or nuclear if you want everything gone:</span>
+git reset --hard HEAD~1</div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">Oops, already pushed (shared branch)</div>
+          <div class="ex-code">git revert &lt;commit-hash&gt;  <span class="c"># creates a new undo commit — safe</span>
+git push                  <span class="c"># history stays clean for collaborators</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="example-block">
+      <div class="example-header">// Scenario 6 — You committed a secret by accident</div>
+      <div class="example-body">
+        <div class="example-scenario">
+          <div class="ex-label">Not pushed yet</div>
+          <div class="ex-code"><span class="c"># Stop tracking the file, keep it locally</span>
+git rm --cached .env
+echo <span class="s">".env"</span> &gt;&gt; .gitignore
+git commit -m <span class="s">"remove .env from tracking, add to gitignore"</span></div>
+        </div>
+        <div class="example-scenario">
+          <div class="ex-label">Already pushed</div>
+          <div class="ex-code"><span class="c"># The secret is now in history — rotate it immediately.</span>
+<span class="c"># Removing it from git does NOT make it safe once pushed.</span>
+<span class="c"># 1. Revoke/rotate the credential at the source (PAT, API key)</span>
+<span class="c"># 2. Then clean history (BFG or git-filter-repo) — loop in your team</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="tab-panel" id="tab-cheatsheet">
+
+    <div class="cheat-grid">
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#7c6df0;border-bottom-color:#e2e0d8;">Init &amp; remote</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git init</span><span class="cheat-note">New local repo</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git clone &lt;url&gt;</span><span class="cheat-note">Clone remote</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git remote add origin &lt;url&gt;</span><span class="cheat-note">Link to GitHub</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git remote -v</span><span class="cheat-note">Check remote URL</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#e85d75;border-bottom-color:#e2e0d8;">Branch</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git checkout -b &lt;name&gt;</span><span class="cheat-note">New branch + switch</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git checkout &lt;name&gt;</span><span class="cheat-note">Switch branch</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git branch</span><span class="cheat-note">List branches</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git branch -d &lt;name&gt;</span><span class="cheat-note">Delete branch</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#2bb89a;border-bottom-color:#e2e0d8;">Stage &amp; commit</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git status</span><span class="cheat-note">What changed</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git diff</span><span class="cheat-note">Line-level diff</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git add -p</span><span class="cheat-note">Stage interactively</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git commit -m ""</span><span class="cheat-note">Commit with message</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#f5a623;border-bottom-color:#e2e0d8;">Push</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git push -u origin &lt;branch&gt;</span><span class="cheat-note">First push + track</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git push</span><span class="cheat-note">Push (after tracking set)</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git push --force-with-lease</span><span class="cheat-note">Safe force push</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#e06c35;border-bottom-color:#e2e0d8;">Pull &amp; sync</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git pull</span><span class="cheat-note">Fetch + merge</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git pull --rebase</span><span class="cheat-note">Fetch + rebase</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git fetch</span><span class="cheat-note">Download only, no merge</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#d4555a;border-bottom-color:#e2e0d8;">Undo</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">git stash / stash pop</span><span class="cheat-note">Shelve changes</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git revert &lt;hash&gt;</span><span class="cheat-note">Safe undo (new commit)</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git reset --soft HEAD~1</span><span class="cheat-note">Undo commit, keep files</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git reset --hard HEAD~1</span><span class="cheat-note">Nuclear wipe</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git reflog</span><span class="cheat-note">Recover lost commits</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#5a9e6f;border-bottom-color:#e2e0d8;">Safety &amp; shortcuts</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">.gitignore</span><span class="cheat-note">Never commit secrets</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">git rm --cached &lt;file&gt;</span><span class="cheat-note">Untrack committed file</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">ctrl+r</span><span class="cheat-note">Search command history</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">chmod +x &lt;file&gt;</span><span class="cheat-note">Make script runnable</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#4a9eff;border-bottom-color:#e2e0d8;">Navigation</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">pwd / ls -la / cd</span><span class="cheat-note">Where / what / move</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">mkdir -p / mv / cp -r</span><span class="cheat-note">Create / move / copy</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">cat / head -n 20</span><span class="cheat-note">Read files</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">tail -f &lt;file&gt;</span><span class="cheat-note">Stream logs live</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#3aa8a8;border-bottom-color:#e2e0d8;">Search &amp; debug</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">grep -r "text" .</span><span class="cheat-note">Search all files</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">lsof -i :3000</span><span class="cheat-note">What's on port 3000</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">ps aux | grep &lt;name&gt;</span><span class="cheat-note">Find process</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">kill -9 &lt;pid&gt;</span><span class="cheat-note">Force kill process</span></div>
+        </div>
+      </div>
+
+      <div class="cheat-card">
+        <div class="cheat-card-header" style="color:#e85d75;border-bottom-color:#e2e0d8;">Claude Code</div>
+        <div class="cheat-card-body">
+          <div class="cheat-row"><span class="cheat-cmd">claude</span><span class="cheat-note">Start session</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">claude -p "&lt;prompt&gt;"</span><span class="cheat-note">One-shot, no session</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">claude --resume</span><span class="cheat-note">Continue last session</span></div>
+          <div class="cheat-row"><span class="cheat-cmd">/compact / /clear</span><span class="cheat-note">Manage context</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <span>Terminal &amp; Git Field Reference</span>
+  <span>Build AI Product Sense · 2025</span>
+</footer>
+
+<script>
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[onclick="switchTab('${name}')"]`).classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+</script>
+
 </body>
 </html>
